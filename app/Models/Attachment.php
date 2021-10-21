@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Attachment extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'item_id',
+        'org_name',
+        'name',
+    ];
 }

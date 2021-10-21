@@ -15,7 +15,8 @@ class CreateAttachmentsTable extends Migration
     {
         Schema::create('attachments', function (Blueprint $table) {
             $table->id();
-            $table->text('image');
+            $table->string('org_name');
+            $table->string('name');
             $table->foreignId('item_id')
                 ->constrained()
                 ->cascadeOnUpdate()

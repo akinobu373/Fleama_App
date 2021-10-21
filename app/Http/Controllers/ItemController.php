@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use Illuminate\Http\Request;
+use App\Models\Attachment;
+use Exception;
+use App\Http\Requests\ItemRequest;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Item::class, 'item');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +33,7 @@ class ItemController extends Controller
      */
     public function create()
     {
-        return view ('items.create');
+        return view('items.create');
     }
 
     /**
@@ -34,9 +42,50 @@ class ItemController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ItemRequest $request)
     {
-        //
+        $item = new Item();
+        $item->fill($request->all());
+
+        $item->user_id = $request->user()->id;
+
+        $files = $request->file;
+
+        DB::beginTransaction();
+
+        try {
+
+            $item->save();
+
+            $paths = [];
+            foreach ($files as $file) {
+
+                $name = $file->getClientOriginalName();
+
+                $path = Storage::putFile('items', $file);
+                if (!$path) {
+                    throw new \Exception("ファイルの保存に失敗しました。");
+                }
+                $paths[] = $path;
+
+                $attachment = new Attachment([
+                    'item_id' => $item->id,
+                    'org_name' => $name,
+                    'name' => basename($path)
+                ]);
+
+                $attachment->save();
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            if (!empty($path)) {
+                Storage::delete($path);
+            }
+            DB::rollback();
+            return back()
+                ->withErrors(['error' => '保存に失敗しました']);
+        }
+        return redirect(route('items.index'))->with(['flash_message' => '登録が完了しました']);
     }
 
     /**
@@ -47,7 +96,7 @@ class ItemController extends Controller
      */
     public function show(Item $item)
     {
-        return view ('items.show',compact('item'));
+        return view('items.show', compact('item'));
     }
 
     /**
@@ -58,7 +107,7 @@ class ItemController extends Controller
      */
     public function edit(Item $item)
     {
-        //
+        return view('items.edit', compact('item'));
     }
 
     /**
@@ -68,9 +117,19 @@ class ItemController extends Controller
      * @param  \App\Models\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Item $item)
+    public function update(ItemRequest $request, Item $item)
     {
-        //
+        $item->fill($request->all());
+
+        DB::beginTransaction();
+        try {
+            $item->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            back()->withErrors(['error' => '保存に失敗しました']);
+        }
+        return redirect(route('items.index'))->with(['flash_message' => '更新が完了しました']);
     }
 
     /**
@@ -81,6 +140,26 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $paths = $item->image_paths;
+            foreach ($paths as $path) {
+                if (!Storage::delete($path)) {
+                    throw new Exception('ファイルの削除を失敗しました');
+                }
+            }
+            $attachment = Attachment::where('item_id', $item->id);
+            $attachment->delete();
+            $item->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withErrors($e->getMessage());
+        }
+        return redirect()
+            ->route('items.index')
+            ->with(['flash_message' => '削除しました']);
     }
 }

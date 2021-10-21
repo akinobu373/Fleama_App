@@ -6,6 +6,7 @@ use App\Models\Attachment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+
 class AttachmentFactory extends Factory
 {
     /**
@@ -26,13 +27,14 @@ class AttachmentFactory extends Factory
         $height = 400;
 
         $file = $this->faker->image(null, $width, $height);
-        $fileName = basename($file);
-        Storage::putFileAs('images/items', $file, $fileName);
+        $path = Storage::putFile('items', $file);
         File::delete($file);
+
 
         return [
             'item_id' => \App\Models\Item::Factory()->create(),
-            'image' => basename($fileName),
+            'org_name' => basename($file),
+            'name' => basename($path),
         ];
     }
 }

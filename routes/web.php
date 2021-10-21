@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\Auth\OAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +15,29 @@ use App\Http\Controllers\ItemController;
 |
 */
 
-Route::get('/', [itemController::class, 'index']);
-Route::resource('items', itemController::class);
+Route::get('/', [itemController::class, 'index'])
+    ->name('root');
+
+Route::resource('items', itemController::class)
+    ->middleware(['auth'])
+    ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+Route::resource('items', ItemController::class)
+    ->only(['index', 'show']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
+
+Route::prefix('auth')->middleware('guest')->group(function () {
+
+    Route::get('/{provider}', [OAuthController::class, 'redirectToProvider'])
+        ->where('provider', 'github|google')
+        ->name('redirectToProvider');
+
+    Route::get('/{provider}/callback', [OAuthController::class, 'oauthCallback'])
+        ->where('provider', 'github|google')
+        ->name('oauthCallback');
+});
