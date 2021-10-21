@@ -31,7 +31,7 @@ class ItemRequest extends FormRequest
 
         $route = $this->route()->getName();
         if ($route === 'items.store') {
-            $rule['file'] = 'required|';
+            $rule['file.*'] = 'required|file|image';
         }
         return $rule;
     }
