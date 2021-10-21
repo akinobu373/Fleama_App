@@ -58,6 +58,7 @@ class ItemController extends Controller
             $item->save();
 
             $paths = [];
+
             foreach ($files as $file) {
 
                 $name = $file->getClientOriginalName();
@@ -67,6 +68,7 @@ class ItemController extends Controller
                     throw new \Exception("ファイルの保存に失敗しました。");
                 }
                 $paths[] = $path;
+                // dd($path);
 
                 $attachment = new Attachment([
                     'item_id' => $item->id,
@@ -78,10 +80,11 @@ class ItemController extends Controller
             }
             DB::commit();
         } catch (\Exception $e) {
-            foreach ($files as $file)
-                if (!empty($path)) {
+            if (!empty($paths)) {
+                foreach ($paths as $path) {
                     Storage::delete($path);
                 }
+            }
             DB::rollback();
             return back()
                 ->withErrors(['error' => '保存に失敗しました']);
