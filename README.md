@@ -15,7 +15,7 @@ https://docs.google.com/spreadsheets/d/1iZOalhFBZVw-CsKbCZLSrq9sJi7wyBFZVZDitagF
 githubとgoogleでログイン、登録ができます
 
 ## herokuデプロイ
-
+https://fleama-app-akinobu373.herokuapp.com
 
 ## スクリーンショット
 
