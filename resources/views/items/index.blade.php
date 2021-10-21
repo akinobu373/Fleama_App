@@ -5,7 +5,6 @@
 @include('partial.errors')
 <section class="row position-relative" data-masonry='{ "percentPosition": true }'>
     @foreach ($items as $item)
-    {{-- {{ dd($item->image_urls, $item->image_urls[0]) }} --}}
     <div class="col-6 col-md-4 col-lg-3 col-sl-2 mb-4">
         <article class="card position-relative">
             <a href="{{ route('items.show', $item) }}" class="text-decoration-none stretched-link">
