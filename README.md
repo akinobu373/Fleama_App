@@ -1,4 +1,4 @@
-# review-app
+# Flema-app
 フリマアプリ
 
 ## 概要
