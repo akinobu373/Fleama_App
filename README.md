@@ -7,7 +7,7 @@
 
 ## テーブル
 ユーザーテーブル
-アイテムーテーブル
+アイテムテーブル
 アタッチメントテーブル
 https://docs.google.com/spreadsheets/d/1iZOalhFBZVw-CsKbCZLSrq9sJi7wyBFZVZDitagFZsg/edit?usp=sharing
 
